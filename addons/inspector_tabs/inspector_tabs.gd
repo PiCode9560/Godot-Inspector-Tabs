@@ -38,7 +38,7 @@ var viewer_container # path to the editor inspector "viewer" area. (camera viewe
 var property_scroll_bar:VScrollBar
 var icon_grabber
 
-var UNKNOWN_ICON:ImageTexture # Use to check if the loaded icon is an unknown icon
+var UNKNOWN_ICON:Texture2D # Use to check if the loaded icon is an unknown icon
 
 var current_parse_category:String = ""
 
@@ -119,7 +119,7 @@ func is_base_class(c_name:String) -> bool:
 	return true
 	
 	
-func get_class_icon(c_name:String) -> ImageTexture:
+func get_class_icon(c_name:String) -> Texture2D:
 	
 	#Get GDExtension Icon
 	var load_icon = icon_grabber.get_icon(c_name)
@@ -209,7 +209,8 @@ func tab_clicked(tab: int) -> void:
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
 				if tab_idx == tab:
-					property_scroll_bar.value = (i.position.y+property_container.position.y)/EditorInterface.get_inspector().get_node("@VBoxContainer@6472").size.y*property_scroll_bar.max_value
+					var list_size_y =  EditorInterface.get_inspector().get_children().filter(func(node:Node):return node is VBoxContainer)[0].size.y
+					property_scroll_bar.value = (i.position.y+property_container.position.y)/list_size_y*property_scroll_bar.max_value
 					break
 			elif tab_idx == -1 and tab == 0: # If theres properties at the top of the inspector without its own category.
 				property_scroll_bar.value = 0
@@ -344,7 +345,8 @@ func property_scrolling():
 		return
 	for i in property_container.get_children():
 		if i.get_class() == "EditorInspectorCategory":
-			if (i.position.y+property_container.position.y-EditorInterface.get_inspector().size.y/3) <= property_scroll_bar.value/property_scroll_bar.max_value*EditorInterface.get_inspector().get_node("@VBoxContainer@6472").size.y:
+			var list_size_y =  EditorInterface.get_inspector().get_children().filter(func(node:Node):return node is VBoxContainer)[0].size.y
+			if (i.position.y+property_container.position.y-EditorInterface.get_inspector().size.y/3) <= property_scroll_bar.value/property_scroll_bar.max_value*list_size_y:
 				category_y = property_container.position.y
 			else:
 				tab_bar.current_tab = max(tab_idx,0)
