@@ -231,7 +231,7 @@ func tab_clicked(tab: int) -> void:
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
 
-			elif tab_idx == -1: # If theres properties at the top of the inspector without its own category.
+			elif tab_idx == 0: # If theres properties at the top of the inspector without its own category.
 				category_idx += 1
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
