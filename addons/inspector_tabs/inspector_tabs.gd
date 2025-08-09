@@ -177,6 +177,9 @@ func get_class_icon(c_name:String) -> Texture2D:
 # add tabs
 func update_tabs() -> void:
 	tab_bar.clear_tabs()
+
+	tab_bar.add_tab("ALL", null)
+
 	for tab:String in tabs:
 		var load_icon:Texture2D
 		if tab.ends_with(".gd"):
@@ -205,11 +208,20 @@ func update_tabs() -> void:
 				tab_bar.add_tab(tab_name,load_icon)
 		tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
 
+	tabs.insert(0, "ALL")
+	_on_click_node.call_deferred(0)
+
 func tab_clicked(tab: int) -> void:
+	if tab == 0:
+		# Show all properties
+		for i in property_container.get_children():
+			i.visible = true
+		return
+
 	if is_filtering: return
 	if property_mode == 0: # Tabbed
 		var category_idx = -1
-		var tab_idx = -1
+		var tab_idx = 0
 		
 		# Show nececary properties
 		for i in property_container.get_children():
@@ -297,6 +309,7 @@ func change_vertical_mode(mode:bool = vertical_mode):
 	var inspector = EditorInterface.get_inspector().get_parent()
 	
 	tab_bar.tab_clicked.connect(tab_clicked)
+	tab_bar.gui_input.connect(_on_tab_bar_gui_input)
 	
 	if not vertical_mode:
 		inspector.add_child(tab_bar)
@@ -385,3 +398,20 @@ func property_scrolling():
 		elif tab_idx == -1: # If theres properties at the top of the inspector without its own category.
 			category_idx += 1
 			tab_idx += 1
+
+
+func _on_tab_bar_gui_input(event):
+	if event is InputEventMouseButton and event.pressed:
+		match event.button_index:
+			MOUSE_BUTTON_WHEEL_UP:
+				tab_bar.current_tab = max(0, tab_bar.current_tab-1)
+				tab_clicked(tab_bar.current_tab)
+			MOUSE_BUTTON_WHEEL_DOWN:
+				tab_bar.current_tab = min(tab_bar.tab_count-1, tab_bar.current_tab+1)
+				tab_clicked(tab_bar.current_tab)
+
+
+
+func _on_click_node(idx:int=0):
+	tab_bar.current_tab = idx
+	tab_clicked(idx)
