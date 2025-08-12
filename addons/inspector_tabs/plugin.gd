@@ -7,76 +7,9 @@ var plugin = INSPECTOR_TAB.new()
 var settings = EditorInterface.get_editor_settings()
 
 func _enter_tree():
-	load_settings()
+	_load_settings()
 	add_inspector_plugin(plugin)
 	plugin.start()
-
-func load_settings():
-	var config = ConfigFile.new()
-	## Load data from a file.
-	var err = config.load(EditorInterface.get_editor_paths().get_config_dir()+"/InspectorTabsPluginSettings.cfg")
-	## If the file didn't load, ignore it.
-	if err != OK:
-		print("ERROR LOADING SETTINGS FILE")
-
-	settings.set("inspector_tabs/tab_layout", config.get_value("Settings", "tab layout",1))
-
-	var property_info = {
-		"name": "inspector_tabs/tab_layout",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "Horizontal,Vertical",
-	}
-	settings.add_property_info(property_info)
-
-	settings.set("inspector_tabs/tab_style", config.get_value("Settings", "tab style",1))
-
-	property_info = {
-		"name": "inspector_tabs/tab_style",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "Text Only,Icon Only,Text and Icon",
-	}
-	settings.add_property_info(property_info)
-
-	settings.set("inspector_tabs/tab_property_mode", config.get_value("Settings", "tab property mode",0))
-
-	property_info = {
-		"name": "inspector_tabs/tab_property_mode",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "Tabbed,Jump Scroll",
-	}
-	settings.add_property_info(property_info)
-
-	settings.set("inspector_tabs/merge_abstract_class_tabs", config.get_value("Settings", "merge abstract class tabs",true))
-
-	property_info = {
-		"name": "inspector_tabs/merge_abstract_class_tabs",
-		"type": TYPE_BOOL,
-	}
-	settings.add_property_info(property_info)
-
-func _exit_tree():
-	settings.set("inspector_tabs/tab_layout", null)
-	settings.set("inspector_tabs/tab_style", null)
-	settings.set("inspector_tabs/tab_property_mode", null)
-	settings.set("inspector_tabs/merge_abstract_class_tabs", null)
-
-	## TODO: move these to the inspector.gd??
-	plugin.property_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.favorite_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.viewer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.property_container.custom_minimum_size.x = 0
-	plugin.favorite_container.custom_minimum_size.x = 0
-	plugin.viewer_container.custom_minimum_size.x = 0
-
-	remove_inspector_plugin(plugin)
-	plugin.tab_bar.queue_free()
-
-
-
-
 
 func _process(delta: float) -> void:
 	# Reposition UI
@@ -116,3 +49,79 @@ func _process(delta: float) -> void:
 	if plugin.tab_bar.tab_count != 0:
 		if EditorInterface.get_inspector().get_edited_object() == null:
 			plugin.tab_bar.clear_tabs()
+
+
+func _exit_tree():
+	settings.set("inspector_tabs/tab_layout", null)
+	settings.set("inspector_tabs/tab_style", null)
+	settings.set("inspector_tabs/tab_property_mode", null)
+	settings.set("inspector_tabs/merge_abstract_class_tabs", null)
+
+	## TODO: move these to the inspector.gd??
+	plugin.property_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	plugin.favorite_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	plugin.viewer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	plugin.property_container.custom_minimum_size.x = 0
+	plugin.favorite_container.custom_minimum_size.x = 0
+	plugin.viewer_container.custom_minimum_size.x = 0
+
+	remove_inspector_plugin(plugin)
+	plugin.tab_bar.queue_free()
+
+func _load_settings() -> void:
+	var config = ConfigFile.new()
+	## Load data from a file.
+	var err = config.load(EditorInterface.get_editor_paths().get_config_dir()+"/InspectorTabsPluginSettings.cfg")
+	## If the file didn't load, ignore it.
+	if err != OK:
+		print("ERROR LOADING SETTINGS FILE")
+
+	_load_setting(INSPECTOR_TAB.KEY_TAB_LAYOUT,
+			TYPE_INT,
+			PROPERTY_HINT_ENUM,
+			"Horizontal,Vertical",
+			"tab layout",
+			1,
+			config,
+			)
+
+	_load_setting(INSPECTOR_TAB.KEY_TAB_STYLE,
+			TYPE_INT,
+			PROPERTY_HINT_ENUM,
+			"Text Only,Icon Only,Text and Icon",
+			"tab style",
+			1,
+			config,
+			)
+
+	_load_setting(INSPECTOR_TAB.KEY_TAB_PROPERTY_MODE,
+			TYPE_INT,
+			PROPERTY_HINT_ENUM,
+			"Tabbed,Jump Scroll",
+			"tab property mode",
+			0,
+			config,
+			)
+
+	_load_setting(INSPECTOR_TAB.KEY_MERGE_ABSTRACT_CLASS_TABS,
+			TYPE_BOOL,
+			PROPERTY_HINT_ENUM,
+			"",
+			"merge abstract class tabs",
+			true,
+			config,
+			)
+
+
+
+
+func _load_setting(setting_path:String, type:int, hint, hint_string:String, config_path:String, default_value, config:ConfigFile) -> void:
+	settings.set(setting_path, config.get_value("Settings", config_path,default_value))
+
+	var property_info = {
+		"name": setting_path,
+		"type": type,
+		"hint": hint,
+		"hint_string": hint_string,
+	}
+	settings.add_property_info(property_info)
