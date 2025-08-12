@@ -1,46 +1,23 @@
 @tool
 extends EditorPlugin
 
-var plugin
+const INSPECTOR_TAB = preload("inspector_tabs.gd")
+var plugin = INSPECTOR_TAB.new()
 
-var filter_bar:LineEdit
 var settings = EditorInterface.get_editor_settings()
 
-
-
 func _enter_tree():
-	plugin = preload("inspector_tabs.gd").new()
-
-	add_inspector_plugin(plugin)
-
-	## TODO: move this to the inspector.gd
-	filter_bar = EditorInterface.get_inspector().get_parent().get_child(2).get_child(0)
-	filter_bar.text_changed.connect(plugin.filter_text_changed)
-
 	load_settings()
-
-	var tab_pos = settings.get("inspector_tabs/tab_layout")
-	if tab_pos != null:
-		if tab_pos == 0:
-			plugin.change_vertical_mode(false)
-		else:
-			plugin.change_vertical_mode(true)
-
-	plugin.tab_style = settings.get("inspector_tabs/tab_style")
-	plugin.property_mode = settings.get("inspector_tabs/tab_property_mode")
-	plugin.merge_abstract_class_tabs = settings.get("inspector_tabs/merge_abstract_class_tabs")
-
-
-	settings.settings_changed.connect(plugin.settings_changed)
+	add_inspector_plugin(plugin)
+	plugin.start()
 
 func load_settings():
 	var config = ConfigFile.new()
-	# Load data from a file.
+	## Load data from a file.
 	var err = config.load(EditorInterface.get_editor_paths().get_config_dir()+"/InspectorTabsPluginSettings.cfg")
-	# If the file didn't load, ignore it.
+	## If the file didn't load, ignore it.
 	if err != OK:
 		print("ERROR LOADING SETTINGS FILE")
-
 
 	settings.set("inspector_tabs/tab_layout", config.get_value("Settings", "tab layout",1))
 

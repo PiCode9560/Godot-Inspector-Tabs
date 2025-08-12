@@ -1,9 +1,24 @@
 extends EditorInspectorPlugin
 
-enum TabStyle{
-	TextOnly,
-	IconOnly,
-	TextAndIcon
+const KEY_TAB_LAYOUT = "inspector_tabs/tab_layout"
+const KEY_TAB_STYLE = "inspector_tabs/tab_style"
+const KEY_TAB_PROPERTY_MODE = "inspector_tabs/tab_property_mode"
+const KEY_MERGE_ABSTRACT_CLASS_TABS = "inspector_tabs/merge_abstract_class_tabs"
+
+enum TabLayouts{
+	HORIZONTAL,
+	VERTICAL,
+}
+
+enum TabStyles{
+	TEXT_ONLY,
+	ICON_ONLY,
+	TEXT_AND_ICON,
+}
+
+enum TabPropertyModes{
+	TABBED,
+	JUMP_SCROLL,
 }
 
 var current_category:String = ""
@@ -46,22 +61,10 @@ var current_parse_category:String = ""
 
 var icon_cache : Dictionary
 
-func _init() -> void:
-	property_scroll_bar.scrolling.connect(property_scrolling)
-
 func _can_handle(object):
 	# We support all objects in this example.
 	return true
 
-# Start inspector loading
-func parse_begin(object: Object) -> void:
-	categories_finish = false
-	categories.clear()
-	tabs.clear()
-
-	tab_can_change = false
-	tab_bar.clear_tabs()
-	#object_custom_classes.clear()
 
 # getting the category from the inspector
 func _parse_category(object: Object, category: String) -> void:
@@ -117,6 +120,33 @@ func _parse_end(object: Object) -> void:
 
 	tab_resized()
 
+# Start inspector loading
+func parse_begin(object: Object) -> void:
+	categories_finish = false
+	categories.clear()
+	tabs.clear()
+	tab_can_change = false
+	tab_bar.clear_tabs()
+
+## Start plugin
+func start() -> void:
+	property_scroll_bar.scrolling.connect(property_scrolling)
+	var filter_bar = EditorInterface.get_inspector().get_parent().get_child(2).get_child(0)
+	filter_bar.text_changed.connect(_filter_text_changed)
+
+	var settings = EditorInterface.get_editor_settings()
+	tab_style = settings.get("inspector_tabs/tab_style")
+	property_mode = settings.get("inspector_tabs/tab_property_mode")
+	merge_abstract_class_tabs = settings.get("inspector_tabs/merge_abstract_class_tabs")
+	settings.settings_changed.connect(settings_changed)
+
+	var tab_pos = settings.get("inspector_tabs/tab_layout")
+	if tab_pos != null:
+		if tab_pos == 0:
+			change_vertical_mode(false)
+		else:
+			change_vertical_mode(true)
+
 # Is it not a custom class
 func is_base_class(c_name:String) -> bool:
 	if c_name.contains("."):return false
@@ -170,11 +200,11 @@ func update_tabs() -> void:
 				load_icon = ImageTexture.create_from_image(rotated_image)
 
 		match tab_style:
-			TabStyle.TextOnly:
+			TabStyles.TEXT_ONLY:
 				tab_bar.add_tab(tab_name,null)
-			TabStyle.IconOnly:
+			TabStyles.ICON_ONLY:
 				tab_bar.add_tab("",load_icon)
-			TabStyle.TextAndIcon:
+			TabStyles.TEXT_AND_ICON:
 				tab_bar.add_tab(tab_name,load_icon)
 
 		tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
@@ -228,7 +258,7 @@ func is_new_tab(category:String) -> bool:
 
 
 # Is searching
-func filter_text_changed(text:String):
+func _filter_text_changed(text:String):
 	if text != "":
 		for i in property_container.get_children():
 			i.visible = true
