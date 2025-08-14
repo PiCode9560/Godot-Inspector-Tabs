@@ -5,11 +5,6 @@ const KEY_TAB_STYLE = "inspector_tabs/tab_style"
 const KEY_TAB_PROPERTY_MODE = "inspector_tabs/tab_property_mode"
 const KEY_MERGE_ABSTRACT_CLASS_TABS = "inspector_tabs/merge_abstract_class_tabs"
 
-enum TabLayouts{
-	HORIZONTAL,
-	VERTICAL,
-}
-
 enum TabStyles{
 	TEXT_ONLY,
 	ICON_ONLY,
@@ -37,8 +32,8 @@ var tab_can_change = false # Stops the TabBar from changing tab
 
 var vertical_mode:bool = true # Tab position
 var vertical_tab_side = 1 # 0:left; 1:Right;
-var tab_style:int
-var property_mode:int
+var tab_style:TabStyles
+var property_mode:TabPropertyModes
 var merge_abstract_class_tabs:bool
 
 ## path to the editor inspector list of properties
@@ -51,9 +46,6 @@ var viewer_container = EditorInterface.get_inspector().get_child(0).get_child(0)
 var property_scroll_bar:VScrollBar = EditorInterface.get_inspector().get_node("_v_scroll")
 ## Use to check if the loaded icon is an unknown icon
 var UNKNOWN_ICON:Texture2D = EditorInterface.get_base_control().get_theme_icon("", "EditorIcons")
-
-## I think this is not used.
-#var object_custom_classes = [] ## Custom classes in the inspector
 
 var is_filtering = false ## is the search bar in use
 
@@ -211,7 +203,7 @@ func update_tabs() -> void:
 
 func tab_clicked(tab: int) -> void:
 	if is_filtering: return
-	if property_mode == 0: # Tabbed
+	if property_mode == TabPropertyModes.TABBED: # Tabbed
 		var category_idx = -1
 		var tab_idx = -1
 
@@ -230,7 +222,7 @@ func tab_clicked(tab: int) -> void:
 				i.visible = false
 			else:
 				i.visible = true
-	elif property_mode == 1: # Jump Scroll
+	elif property_mode == TabPropertyModes.JUMP_SCROLL: # Jump Scroll
 		var category_idx = -1
 		var tab_idx = -1
 
@@ -368,7 +360,7 @@ func settings_changed() -> void:
 			print("Error saving inspector tab settings: ",error_string(err))
 
 func property_scrolling():
-	if property_mode != 1 or tab_bar.tab_count == 0 or is_filtering:return
+	if property_mode != TabPropertyModes.JUMP_SCROLL or tab_bar.tab_count == 0 or is_filtering:return
 	var category_idx = -1
 	var tab_idx = -1
 	var category_y = - INF

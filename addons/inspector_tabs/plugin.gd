@@ -11,6 +11,7 @@ func _enter_tree():
 	add_inspector_plugin(plugin)
 	plugin.start()
 
+## TODO:Move this to the inspector.gd.
 func _process(delta: float) -> void:
 	# Reposition UI
 	if plugin.vertical_mode:
