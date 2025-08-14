@@ -1,5 +1,20 @@
 extends EditorInspectorPlugin
 
+const KEY_TAB_LAYOUT = "inspector_tabs/tab_layout"
+const KEY_TAB_STYLE = "inspector_tabs/tab_style"
+const KEY_TAB_PROPERTY_MODE = "inspector_tabs/tab_property_mode"
+const KEY_MERGE_ABSTRACT_CLASS_TABS = "inspector_tabs/merge_abstract_class_tabs"
+
+enum TabStyles{
+	TEXT_ONLY,
+	ICON_ONLY,
+	TEXT_AND_ICON,
+}
+
+enum TabPropertyModes{
+	TABBED,
+	JUMP_SCROLL,
+}
 
 var current_category:String = ""
 
@@ -17,28 +32,22 @@ var tab_can_change = false # Stops the TabBar from changing tab
 
 var vertical_mode:bool = true # Tab position
 var vertical_tab_side = 1 # 0:left; 1:Right;
-var tab_style:int
-var property_mode:int
+var tab_style:TabStyles
+var property_mode:TabPropertyModes
 var merge_abstract_class_tabs:bool
 
-enum TabStyle{
-	TextOnly,
-	IconOnly,
-	TextAndIcon
-}
+## path to the editor inspector list of properties
+var property_container = EditorInterface.get_inspector().get_child(0).get_child(2)
+## path to the editor inspector favorite list.
+var favorite_container = EditorInterface.get_inspector().get_child(0).get_child(1)
+## path to the editor inspector "viewer" area. (camera viewer or skeleton3D bone tree)
+var viewer_container = EditorInterface.get_inspector().get_child(0).get_child(0)
+## path to the inspector scroll bar
+var property_scroll_bar:VScrollBar = EditorInterface.get_inspector().get_node("_v_scroll")
+## Use to check if the loaded icon is an unknown icon
+var UNKNOWN_ICON:Texture2D = EditorInterface.get_base_control().get_theme_icon("", "EditorIcons")
 
-
-var object_custom_classes = [] # Custom classes in the inspector
-
-var is_filtering = false # are the search bar in use
-
-var property_container # path to the editor inspector list of properties
-var favorite_container # path to the editor inspector favorite list.
-var viewer_container # path to the editor inspector "viewer" area. (camera viewer or skeleton3D bone tree)
-var property_scroll_bar:VScrollBar
-var icon_grabber
-
-var UNKNOWN_ICON:Texture2D # Use to check if the loaded icon is an unknown icon
+var is_filtering = false ## is the search bar in use
 
 var current_parse_category:String = ""
 
@@ -48,15 +57,6 @@ func _can_handle(object):
 	# We support all objects in this example.
 	return true
 
-# Start inspector loading
-func parse_begin(object: Object) -> void:
-	categories_finish = false
-	categories.clear()
-	tabs.clear()
-
-	tab_can_change = false
-	tab_bar.clear_tabs()
-	object_custom_classes.clear()
 
 # getting the category from the inspector
 func _parse_category(object: Object, category: String) -> void:
@@ -112,6 +112,33 @@ func _parse_end(object: Object) -> void:
 
 	tab_resized()
 
+# Start inspector loading
+func parse_begin(object: Object) -> void:
+	categories_finish = false
+	categories.clear()
+	tabs.clear()
+	tab_can_change = false
+	tab_bar.clear_tabs()
+
+## Start plugin
+func start() -> void:
+	property_scroll_bar.scrolling.connect(property_scrolling)
+	var filter_bar = EditorInterface.get_inspector().get_parent().get_child(2).get_child(0)
+	filter_bar.text_changed.connect(_filter_text_changed)
+
+	var settings = EditorInterface.get_editor_settings()
+	tab_style = settings.get("inspector_tabs/tab_style")
+	property_mode = settings.get("inspector_tabs/tab_property_mode")
+	merge_abstract_class_tabs = settings.get("inspector_tabs/merge_abstract_class_tabs")
+	settings.settings_changed.connect(settings_changed)
+
+	var tab_pos = settings.get("inspector_tabs/tab_layout")
+	if tab_pos != null:
+		if tab_pos == 0:
+			change_vertical_mode(false)
+		else:
+			change_vertical_mode(true)
+
 # Is it not a custom class
 func is_base_class(c_name:String) -> bool:
 	if c_name.contains("."):return false
@@ -163,20 +190,20 @@ func update_tabs() -> void:
 				var rotated_image = load_icon.get_image().duplicate()
 				rotated_image.rotate_90(COUNTERCLOCKWISE)
 				load_icon = ImageTexture.create_from_image(rotated_image)
-				
+
 		match tab_style:
-			TabStyle.TextOnly:
+			TabStyles.TEXT_ONLY:
 				tab_bar.add_tab(tab_name,null)
-			TabStyle.IconOnly:
+			TabStyles.ICON_ONLY:
 				tab_bar.add_tab("",load_icon)
-			TabStyle.TextAndIcon:
+			TabStyles.TEXT_AND_ICON:
 				tab_bar.add_tab(tab_name,load_icon)
-				
+
 		tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
 
 func tab_clicked(tab: int) -> void:
 	if is_filtering: return
-	if property_mode == 0: # Tabbed
+	if property_mode == TabPropertyModes.TABBED: # Tabbed
 		var category_idx = -1
 		var tab_idx = -1
 
@@ -195,7 +222,7 @@ func tab_clicked(tab: int) -> void:
 				i.visible = false
 			else:
 				i.visible = true
-	elif property_mode == 1: # Jump Scroll
+	elif property_mode == TabPropertyModes.JUMP_SCROLL: # Jump Scroll
 		var category_idx = -1
 		var tab_idx = -1
 
@@ -223,7 +250,7 @@ func is_new_tab(category:String) -> bool:
 
 
 # Is searching
-func filter_text_changed(text:String):
+func _filter_text_changed(text:String):
 	if text != "":
 		for i in property_container.get_children():
 			i.visible = true
@@ -333,7 +360,7 @@ func settings_changed() -> void:
 			print("Error saving inspector tab settings: ",error_string(err))
 
 func property_scrolling():
-	if property_mode != 1 or tab_bar.tab_count == 0 or is_filtering:return
+	if property_mode != TabPropertyModes.JUMP_SCROLL or tab_bar.tab_count == 0 or is_filtering:return
 	var category_idx = -1
 	var tab_idx = -1
 	var category_y = - INF
