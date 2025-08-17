@@ -145,9 +145,40 @@ func get_script_icon(script_path:String) -> Texture2D:
 				return ImageTexture.create_from_image(image)
 	return base_control.get_theme_icon("GDScript", "EditorIcons")
 
+
+func add_all_tab():
+	var load_icon:Texture2D = base_control.get_theme_icon("DebugNext", "EditorIcons")
+
+	if vertical_mode:
+		# Rotate the image for the vertical tab
+		if vertical_tab_side == 0:
+			var rotated_image = load_icon.get_image().duplicate()
+			rotated_image.rotate_90(CLOCKWISE)
+			load_icon = ImageTexture.create_from_image(rotated_image)
+		else:
+			var rotated_image = load_icon.get_image().duplicate()
+			rotated_image.rotate_90(COUNTERCLOCKWISE)
+			load_icon = ImageTexture.create_from_image(rotated_image)
+
+	var tab_name = "All"
+	match tab_style:
+		TabStyle.TextOnly:
+			tab_bar.add_tab(tab_name,null)
+		TabStyle.IconOnly:
+			tab_bar.add_tab("",load_icon)
+		TabStyle.TextAndIcon:
+			tab_bar.add_tab(tab_name,load_icon)
+	tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
+
+
 # add tabs
 func update_tabs() -> void:
 	tab_bar.clear_tabs()
+	
+	if property_mode == 0: # Only Tabbed Mode
+		add_all_tab()
+		tabs.insert(0, "All")
+
 	for tab:String in tabs:
 		## Get an icon for the tab.
 		var load_icon = get_tab_icon(tab)
@@ -174,20 +205,39 @@ func update_tabs() -> void:
 				
 		tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
 
+	if tab_bar.tab_count > 0:
+		_on_click_node(0)
+
+	if property_mode == 0: # Only Tabbed Mode
+		tabs.insert(0, "All")
+
+	if vertical_mode:
+		tab_bar.size.x = tab_bar.get_minimum_size().x
+	else:
+		tab_bar.size.y = tab_bar.get_minimum_size().y
+		
+
 func tab_clicked(tab: int) -> void:
 	if is_filtering: return
-	if property_mode == 0: # Tabbed
-		var category_idx = -1
-		var tab_idx = -1
 
+	if property_mode == 0: # Tabbed
+		if tab == 0:
+			# Show all properties
+			for i in property_container.get_children():
+				i.visible = true
+			return
+			
+		var category_idx = -1
+		var tab_idx = 0
+		
 		# Show nececary properties
 		for i in property_container.get_children():
 			if i.get_class() == "EditorInspectorCategory":
 				category_idx += 1
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
-
-			elif tab_idx == -1: # If theres properties at the top of the inspector without its own category.
+					
+			elif tab_idx == 0: # If theres properties at the top of the inspector without its own category.
 				category_idx += 1
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
@@ -236,11 +286,13 @@ func filter_text_changed(text:String):
 func tab_selected(tab):
 	if tab_can_change:
 		current_category = tabs[tab]
-
+		
+		
 func tab_resized():
-	if not vertical_mode:
-		if tabs.size() != 0:
-			tab_bar.max_tab_width = tab_bar.get_parent().get_rect().size.x/tabs.size()
+	if vertical_mode:
+		tab_bar.custom_minimum_size.x = tab_bar.size.x
+	else:
+		tab_bar.custom_minimum_size.y = tab_bar.size.y
 
 
 
@@ -274,6 +326,8 @@ func change_vertical_mode(mode:bool = vertical_mode):
 	update_tabs()
 
 	if vertical_mode:
+		if EditorInterface.get_inspector().resized.is_connected(_on_inspector_resized) == false:
+			EditorInterface.get_inspector().resized.connect(_on_inspector_resized)
 		EditorInterface.get_inspector().add_child(tab_bar)
 		property_container.size_flags_horizontal = Control.SIZE_SHRINK_END
 		favorite_container.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -354,6 +408,17 @@ func property_scrolling():
 		elif tab_idx == -1: # If theres properties at the top of the inspector without its own category.
 			category_idx += 1
 			tab_idx += 1
+
+
+func _on_click_node(idx:int=0):
+	tab_bar.current_tab = idx
+	tab_clicked(idx)
+
+
+func _on_inspector_resized():
+	if vertical_mode:
+		tab_bar.custom_minimum_size.x = tab_bar.size.y
+		tab_bar.reset_size()
 
 func get_tab_icon(tab) -> Texture2D:
 	var load_icon : Texture2D
@@ -449,3 +514,4 @@ func load_gdextension_config(path: String) -> Dictionary:
 			data[section][key] = config.get_value(section, key)
 
 	return data
+
