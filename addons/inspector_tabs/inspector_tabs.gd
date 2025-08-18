@@ -179,6 +179,16 @@ func start() -> void:
 		else:
 			change_vertical_mode(true)
 
+func exit() -> void:
+	property_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	favorite_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	viewer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	property_container.custom_minimum_size.x = 0
+	favorite_container.custom_minimum_size.x = 0
+	viewer_container.custom_minimum_size.x = 0
+
+	tab_bar.queue_free()
+
 # Is it not a custom class
 func is_base_class(c_name:String) -> bool:
 	if c_name.contains("."):return false

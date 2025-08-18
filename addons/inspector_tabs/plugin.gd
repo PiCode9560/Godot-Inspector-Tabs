@@ -16,21 +16,14 @@ func _process(delta: float) -> void:
 	plugin.process(delta)
 
 func _exit_tree():
-	settings.set("inspector_tabs/tab_layout", null)
-	settings.set("inspector_tabs/tab_style", null)
-	settings.set("inspector_tabs/tab_property_mode", null)
-	settings.set("inspector_tabs/merge_abstract_class_tabs", null)
+	settings.set(plugin.KEY_TAB_LAYOUT, null)
+	settings.set(plugin.KEY_TAB_STYLE, null)
+	settings.set(plugin.KEY_TAB_PROPERTY_MODE, null)
+	settings.set(plugin.KEY_MERGE_ABSTRACT_CLASS_TABS, null)
 
-	## TODO: move these to the inspector.gd??
-	plugin.property_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.favorite_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.viewer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	plugin.property_container.custom_minimum_size.x = 0
-	plugin.favorite_container.custom_minimum_size.x = 0
-	plugin.viewer_container.custom_minimum_size.x = 0
-
+	plugin.exit()
 	remove_inspector_plugin(plugin)
-	plugin.tab_bar.queue_free()
+
 
 func _load_settings() -> void:
 	var config = ConfigFile.new()
