@@ -11,46 +11,9 @@ func _enter_tree():
 	add_inspector_plugin(plugin)
 	plugin.start()
 
-## TODO:Move this to the inspector.gd.
+
 func _process(delta: float) -> void:
-	# Reposition UI
-	if plugin.vertical_mode:
-		plugin.tab_bar.size.x = EditorInterface.get_inspector().size.y
-		if plugin.vertical_tab_side == 0:#Left side
-			plugin.tab_bar.global_position = EditorInterface.get_inspector().global_position+Vector2(0,plugin.tab_bar.size.x)
-			plugin.tab_bar.rotation = -PI/2
-			plugin.property_container.custom_minimum_size.x = plugin.property_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.favorite_container.custom_minimum_size.x = plugin.favorite_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.viewer_container.custom_minimum_size.x = plugin.favorite_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.property_container.position.x = plugin.tab_bar.size.y + 5
-			plugin.favorite_container.position.x = plugin.tab_bar.size.y + 5
-			plugin.viewer_container.position.x = plugin.tab_bar.size.y + 5
-		else:#Right side
-			plugin.tab_bar.global_position = EditorInterface.get_inspector().global_position+Vector2(plugin.favorite_container.get_parent_area_size().x+plugin.tab_bar.size.y/2,0)
-			if plugin.property_scroll_bar.visible:
-				plugin.property_scroll_bar.position.x = plugin.property_container.get_parent_area_size().x - plugin.tab_bar.size.y+plugin.property_scroll_bar.size.x/2
-				plugin.tab_bar.global_position.x += plugin.property_scroll_bar.size.x
-			plugin.tab_bar.rotation = PI/2
-			plugin.property_container.custom_minimum_size.x = plugin.property_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.favorite_container.custom_minimum_size.x = plugin.favorite_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.viewer_container.custom_minimum_size.x = plugin.favorite_container.get_parent_area_size().x - plugin.tab_bar.size.y - 5
-			plugin.property_container.position.x = 0
-			plugin.favorite_container.position.x = 0
-			plugin.viewer_container.position.x = 0
-
-	if EditorInterface.get_inspector().global_position.x < get_viewport().size.x/2 -EditorInterface.get_inspector().size.x/2:
-		if plugin.vertical_tab_side != 1:
-			plugin.vertical_tab_side = 1
-			plugin.change_vertical_mode()
-	else:
-		if plugin.vertical_tab_side != 0:
-			plugin.vertical_tab_side = 0
-			plugin.change_vertical_mode()
-
-	if plugin.tab_bar.tab_count != 0:
-		if EditorInterface.get_inspector().get_edited_object() == null:
-			plugin.tab_bar.clear_tabs()
-
+	plugin.process(delta)
 
 func _exit_tree():
 	settings.set("inspector_tabs/tab_layout", null)

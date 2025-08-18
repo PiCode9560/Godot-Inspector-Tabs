@@ -120,6 +120,46 @@ func parse_begin(object: Object) -> void:
 	tab_can_change = false
 	tab_bar.clear_tabs()
 
+func process(delta) -> void:
+	# Reposition UI
+	if vertical_mode:
+		tab_bar.size.x = EditorInterface.get_inspector().size.y
+		if vertical_tab_side == 0:#Left side
+			tab_bar.global_position = EditorInterface.get_inspector().global_position+Vector2(0,tab_bar.size.x)
+			tab_bar.rotation = -PI/2
+			property_container.custom_minimum_size.x = property_container.get_parent_area_size().x - tab_bar.size.y - 5
+			favorite_container.custom_minimum_size.x = favorite_container.get_parent_area_size().x - tab_bar.size.y - 5
+			viewer_container.custom_minimum_size.x = favorite_container.get_parent_area_size().x - tab_bar.size.y - 5
+			property_container.position.x = tab_bar.size.y + 5
+			favorite_container.position.x = tab_bar.size.y + 5
+			viewer_container.position.x = tab_bar.size.y + 5
+		else:#Right side
+			tab_bar.global_position = EditorInterface.get_inspector().global_position+Vector2(favorite_container.get_parent_area_size().x+tab_bar.size.y/2,0)
+			if property_scroll_bar.visible:
+				property_scroll_bar.position.x = property_container.get_parent_area_size().x - tab_bar.size.y+property_scroll_bar.size.x/2
+				tab_bar.global_position.x += property_scroll_bar.size.x
+			tab_bar.rotation = PI/2
+			property_container.custom_minimum_size.x = property_container.get_parent_area_size().x - tab_bar.size.y - 5
+			favorite_container.custom_minimum_size.x = favorite_container.get_parent_area_size().x - tab_bar.size.y - 5
+			viewer_container.custom_minimum_size.x = favorite_container.get_parent_area_size().x - tab_bar.size.y - 5
+			property_container.position.x = 0
+			favorite_container.position.x = 0
+			viewer_container.position.x = 0
+
+	if EditorInterface.get_inspector().global_position.x < base_control.get_viewport().size.x/2 -EditorInterface.get_inspector().size.x/2:
+		if vertical_tab_side != 1:
+			vertical_tab_side = 1
+			change_vertical_mode()
+	else:
+		if vertical_tab_side != 0:
+			vertical_tab_side = 0
+			change_vertical_mode()
+
+	if tab_bar.tab_count != 0:
+		if EditorInterface.get_inspector().get_edited_object() == null:
+			tab_bar.clear_tabs()
+
+
 ## Start plugin
 func start() -> void:
 	property_scroll_bar.scrolling.connect(property_scrolling)
