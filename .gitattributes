@@ -2,6 +2,7 @@
 * text=auto eol=lf
 
 # Only include the addons folder when downloading from the Asset Library.
-/**        export-ignore
+/**                        export-ignore
+/addons                   !export-ignore
 /addons/inspector_tabs    !export-ignore
 /addons/inspector_tabs/** !export-ignore
