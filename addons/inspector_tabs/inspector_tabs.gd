@@ -53,6 +53,8 @@ var current_parse_category:String = ""
 
 var icon_cache : Dictionary
 
+var inspector_dock = EditorInterface.get_base_control().find_child("Inspector",true,false)
+
 func _can_handle(object):
 	# We support all objects in this example.
 	return true
@@ -163,7 +165,9 @@ func process(delta) -> void:
 ## Start plugin
 func start() -> void:
 	property_scroll_bar.scrolling.connect(property_scrolling)
-	var filter_bar = EditorInterface.get_inspector().get_parent().get_child(2).get_child(0)
+
+	var filter_bar = inspector_dock.find_children("","LineEdit",true,false).filter(func(line_edit:LineEdit): return line_edit.right_icon == EditorInterface.get_editor_theme().get_icon("Search","EditorIcons"))[0]
+
 	filter_bar.text_changed.connect(_filter_text_changed)
 
 	var settings = EditorInterface.get_editor_settings()
@@ -340,13 +344,21 @@ func change_vertical_mode(mode:bool = vertical_mode):
 	panel.show_behind_parent = true
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var inspector = EditorInterface.get_inspector().get_parent()
-
 	tab_bar.tab_clicked.connect(tab_clicked)
 
 	if not vertical_mode:
-		inspector.add_child(tab_bar)
-		inspector.move_child(tab_bar,3)
+		###### Find the first ancestor VBoxContainer function
+		var find_parent_vbox := func(from_node:Node, find_parent_vbox:Callable) -> VBoxContainer:
+			var parent := from_node.get_parent()
+			if parent is VBoxContainer:
+				return parent
+			return find_parent_vbox.call(parent, find_parent_vbox)
+		find_parent_vbox = find_parent_vbox.bind(find_parent_vbox)
+		######
+
+		var inspector_parent_vbox = find_parent_vbox.call(EditorInterface.get_inspector())
+		inspector_parent_vbox.add_child(tab_bar)
+		inspector_parent_vbox.move_child(tab_bar,inspector_parent_vbox.get_child_count() - 2)
 
 	update_tabs()
 

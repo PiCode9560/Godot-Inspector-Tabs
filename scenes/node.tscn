@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://y8bs6egoqbwl"]
+
+[node name="Node" type="Node"]
+
+[node name="HSlider" type="HSlider" parent="."]
+offset_right = 8.0
+offset_bottom = 16.0
+
+[node name="VehicleBody3D" type="VehicleBody3D" parent="."]
