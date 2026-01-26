@@ -22,6 +22,7 @@ func _exit_tree():
 	settings.set(plugin.KEY_TAB_STYLE, null)
 	settings.set(plugin.KEY_TAB_PROPERTY_MODE, null)
 	settings.set(plugin.KEY_MERGE_ABSTRACT_CLASS_TABS, null)
+	settings.set(plugin.KEY_TAB_CLIP_MODE, null)
 
 	plugin.exit()
 	remove_inspector_plugin(plugin)
@@ -78,6 +79,18 @@ For example, [b]PhysicsBody3D[/b] category will be in the [b]RigidBody3D[/b] tab
 			config,
 			)
 
+	_load_setting(INSPECTOR_TAB.KEY_TAB_CLIP_MODE,
+			"How the tabs in the tab bar are clipped when they are overflowed.\n
+[b]Scroll:[/b] A scroll bar will be shown when the tabs overflowed. \n
+[b]Clip Text:[/b] If [b]Tab Style[/b] is set to [b]Text Only[/b] or [b]Text and Icon[/b], the text in the tab will be clipped when overflowed. \n
+[b]Flow:[/b] The tabs will be moved to a new row when overflowed.",
+			TYPE_INT,
+			PROPERTY_HINT_ENUM,
+			"Scroll,Clip Text,Flow",
+			"tab clip mode",
+			0,
+			config,
+			)
 
 
 

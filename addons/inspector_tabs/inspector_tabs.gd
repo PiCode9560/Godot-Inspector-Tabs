@@ -4,6 +4,7 @@ const KEY_TAB_LAYOUT = "inspector_tabs/tab_layout"
 const KEY_TAB_STYLE = "inspector_tabs/tab_style"
 const KEY_TAB_PROPERTY_MODE = "inspector_tabs/tab_property_mode"
 const KEY_MERGE_ABSTRACT_CLASS_TABS = "inspector_tabs/merge_abstract_class_tabs"
+const KEY_TAB_CLIP_MODE = "inspector_tabs/tab_clip_mode"
 
 enum TabStyles{
 	TEXT_ONLY,
@@ -23,7 +24,7 @@ var tabs = [] # All tabs in the inspector
 
 var categories_finish = false # Finish adding categories
 
-var tab_bar:TabBar # Inspector Tabs
+var tab_bar:InspectorTabBar # Inspector Tabs
 var base_control = EditorInterface.get_base_control()
 var settings = EditorInterface.get_editor_settings()
 
@@ -35,6 +36,7 @@ var vertical_tab_side = 1 # 0:left; 1:Right;
 var tab_style:TabStyles
 var property_mode:TabPropertyModes
 var merge_abstract_class_tabs:bool
+var tab_clip_mode:InspectorTabBar.ClipMode
 
 ## path to the editor inspector list of properties
 var property_container = EditorInterface.get_inspector().get_child(0).get_child(2)
@@ -125,6 +127,7 @@ func parse_begin(object: Object) -> void:
 func process(delta) -> void:
 	# Reposition UI
 	if vertical_mode:
+		tab_bar.size.y = 0
 		tab_bar.size.x = EditorInterface.get_inspector().size.y
 		if vertical_tab_side == 0:#Left side
 			tab_bar.global_position = EditorInterface.get_inspector().global_position+Vector2(0,tab_bar.size.x)
@@ -174,6 +177,7 @@ func start() -> void:
 	tab_style = settings.get("inspector_tabs/tab_style")
 	property_mode = settings.get("inspector_tabs/tab_property_mode")
 	merge_abstract_class_tabs = settings.get("inspector_tabs/merge_abstract_class_tabs")
+	tab_clip_mode = settings.get(KEY_TAB_CLIP_MODE)
 	settings.settings_changed.connect(settings_changed)
 
 	var tab_pos = settings.get("inspector_tabs/tab_layout")
@@ -321,7 +325,9 @@ func tab_selected(tab):
 func tab_resized():
 	if not vertical_mode:
 		if tabs.size() != 0:
-			tab_bar.max_tab_width = tab_bar.get_parent().get_rect().size.x/tabs.size()
+			pass
+			#print_debug("FIX max_tab_width")
+			#tab_bar.max_tab_width = tab_bar.get_parent().get_rect().size.x/tabs.size()
 
 
 
@@ -332,17 +338,15 @@ func change_vertical_mode(mode:bool = vertical_mode):
 		tab_bar.queue_free()
 	vertical_mode = vertical_mode
 
-	tab_bar = TabBar.new()
+	tab_bar = InspectorTabBar.new(tab_clip_mode, vertical_mode, vertical_tab_side == 0)
+	tab_bar.custom_minimum_size = Vector2(10,10)
 	tab_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tab_bar.clip_tabs = true
+	#tab_bar.clip_tabs = true
 	tab_bar.rotation = PI/2
 	tab_bar.mouse_filter =Control.MOUSE_FILTER_PASS
-	var panel = Panel.new()
-	tab_bar.add_child(panel)
-	panel.anchor_right = 1
-	panel.anchor_bottom = 1
-	panel.show_behind_parent = true
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	#panel.anchor_right = 1
+	#panel.anchor_bottom = 1
 
 	tab_bar.tab_clicked.connect(tab_clicked)
 
@@ -369,9 +373,11 @@ func change_vertical_mode(mode:bool = vertical_mode):
 		viewer_container.size_flags_horizontal = Control.SIZE_SHRINK_END
 		tab_bar.top_level = true
 		if vertical_tab_side == 0:
-			tab_bar.layout_direction =Control.LAYOUT_DIRECTION_RTL
-		else:
 			tab_bar.layout_direction =Control.LAYOUT_DIRECTION_LTR
+			(tab_bar._tab_container as HBoxContainer).layout_direction = Control.LAYOUT_DIRECTION_RTL
+		else:
+			tab_bar.layout_direction =Control.LAYOUT_DIRECTION_RTL
+			(tab_bar._tab_container as HBoxContainer).layout_direction = Control.LAYOUT_DIRECTION_LTR
 	else:
 		property_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		favorite_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -405,8 +411,14 @@ func settings_changed() -> void:
 	if merge_class != null:
 		if merge_abstract_class_tabs != merge_class:
 			merge_abstract_class_tabs = merge_class
+	var clip_mode = settings.get(KEY_TAB_CLIP_MODE)
+	if clip_mode != null:
+		if tab_clip_mode != clip_mode:
+			tab_clip_mode = clip_mode
+			change_vertical_mode()
 
-	if tab_pos != null and style != null and prop_mode != null and merge_class != null:
+
+	if tab_pos != null and style != null and prop_mode != null and merge_class != null and clip_mode != null:
 
 		#Save settings
 		var config = ConfigFile.new()
@@ -415,6 +427,7 @@ func settings_changed() -> void:
 		config.set_value("Settings", "tab style", style)
 		config.set_value("Settings", "tab property mode", prop_mode)
 		config.set_value("Settings", "merge abstract class tabs", merge_abstract_class_tabs)
+		config.set_value("Settings", "tab clip mode", clip_mode)
 
 		# Save it to a file (overwrite if already exists).
 		var err = config.save(EditorInterface.get_editor_paths().get_config_dir()+"/InspectorTabsPluginSettings.cfg")
@@ -538,3 +551,179 @@ func load_gdextension_config(path: String) -> Dictionary:
 			data[section][key] = config.get_value(section, key)
 
 	return data
+
+class InspectorTabBar extends MarginContainer:
+	signal tab_clicked(tab : int)
+	signal tab_selected(tab : int)
+
+	var _buttons : Array[Button] = []
+	var _tab_container : Container
+
+	var current_tab:int = 0:
+		set(v):
+			if current_tab != v:
+				current_tab = v
+				_update_buttons()
+
+	var tab_count:int = 0
+
+	enum ClipMode {
+		SCROLL,
+		CLIP_TEXT,
+		FLOW
+	}
+
+	func _init(mode:ClipMode, vertical:bool, on_left_side:bool) -> void:
+		self.name = "InspectorTabBar"
+
+		var panel = Panel.new()
+		add_child(panel)
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.clip_children = CanvasItem.CLIP_CHILDREN_AND_DRAW
+
+		var add_scroll_container := func():
+			_tab_container = HBoxContainer.new()
+			_tab_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			var scroll_container := InspectorScrollContainer.new(vertical)
+			panel.add_child(scroll_container)
+			scroll_container.add_child(_tab_container)
+			scroll_container.minimum_size_changed.connect(func(): panel.custom_minimum_size.y = scroll_container.size.y)
+			scroll_container.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+
+
+		match mode:
+			ClipMode.FLOW:
+				_tab_container = FlowContainer.new()
+				panel.add_child(_tab_container)
+				_tab_container.minimum_size_changed.connect(func(): panel.custom_minimum_size.y = _tab_container.get_minimum_size().y)
+			ClipMode.SCROLL:
+				add_scroll_container.call()
+			ClipMode.CLIP_TEXT:
+				add_scroll_container.call()
+
+		_tab_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_tab_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_tab_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+
+	func _tab_clicked(tab: int) -> void:
+		current_tab = tab
+		tab_clicked.emit(tab)
+		_update_buttons()
+	func _update_buttons():
+		for i in _buttons.size():
+			if i != current_tab:
+				_buttons[i].button_pressed = false
+			else:
+				_buttons[i].button_pressed = true
+
+	func clear_tabs() -> void:
+		for button in _buttons:
+			button.queue_free()
+		_buttons.clear()
+		tab_count = 0
+
+	func add_tab(title:String, icon:Texture2D) -> void:
+		#print("ADD T")
+		var button := Button.new()
+		button.toggle_mode = true
+		_tab_container.add_child(button)
+		button.pressed.connect(_tab_clicked.bind(_buttons.size()))
+		_buttons.append(button)
+		button.text = title
+		button.icon = icon
+		tab_count += 1
+		#printerr("add_tab() not implemented")
+
+	func set_tab_tooltip(tab_idx:int, tooltip:String) -> void:
+		_buttons[tab_idx].tooltip_text = tooltip
+
+class InspectorScrollContainer extends Control:
+
+	const PAGE_DIVISOR = 8
+
+	var _scroll_bar : ScrollBar
+	var _child : Control
+
+	var reverse := false
+
+	func _init(reverse:bool) -> void:
+		self.reverse = reverse
+		#var vbox := VBoxContainer.new()
+		#vbox.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		#add_child(vbox)
+		#vbox.minimum_size_changed.connect(func(): custom_minimum_size.y = vbox.get_minimum_size().y)
+		#vbox.clip_contents = false
+		set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+		#vbox.add_child(_tab_container)
+
+
+		_scroll_bar = HScrollBar.new()
+		add_child(_scroll_bar)
+		_scroll_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_scroll_bar.set_anchors_and_offsets_preset.call_deferred(Control.PRESET_BOTTOM_WIDE)
+		_scroll_bar.owner = self
+		_scroll_bar.scrolling.connect(_on_scroll_bar_scrolling)
+		resized.connect(_update_scroll_bar)
+		if reverse:
+			_scroll_bar.scale.x = -1
+		#_scroll_bar.
+
+		custom_minimum_size.y = _scroll_bar.get_minimum_size().y
+		child_entered_tree.connect(_on_child_entered_tree)
+
+	func _on_child_entered_tree(node: Node) -> void:
+		if _child: return
+		if node != _scroll_bar:
+			if node is Control:
+				_child = node
+				node.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+				node.minimum_size_changed.connect(func():
+					_update_scroll_bar())
+				custom_minimum_size.y = _scroll_bar.get_minimum_size().y + node.get_minimum_size().y
+		#panel.resized.connect(func():
+			#scroll_bar.page = panel.size.x;
+			#scroll_bar.custom_minimum_size.x = panel.size.x)
+
+	func _update_scroll_bar() -> void:
+		if _child:
+			_scroll_bar.max_value = _child.get_minimum_size().x
+			custom_minimum_size.y = _scroll_bar.get_minimum_size().y + _child.get_minimum_size().y;
+
+		_scroll_bar.page = size.x;
+		#_scroll_bar.custom_minimum_size.x = size.x
+		_scroll_bar.scrolling.emit()
+
+		if _scroll_bar.page == _scroll_bar.max_value:
+			_scroll_bar.visible = false
+			if _child:
+				custom_minimum_size.y = _child.get_minimum_size().y;
+		else:
+			_scroll_bar.visible = true
+			if _child:
+				custom_minimum_size.y = _scroll_bar.get_minimum_size().y + _child.get_minimum_size().y;
+		_scroll_bar.position.y = size.y - _scroll_bar.size.y
+
+		if reverse:
+			_scroll_bar.position.x = size.x
+
+	func _on_scroll_bar_scrolling() -> void:
+		if _child:
+			if not reverse:
+				_child.position.x = -_scroll_bar.value
+			else:
+				_child.position.x = size.x + _scroll_bar.value - _child.size.x
+
+	func _gui_input(event: InputEvent) -> void:
+		if event is InputEventMouseButton:
+			if event.button_index == MouseButton.MOUSE_BUTTON_WHEEL_DOWN and event.is_pressed():
+				# Taken from godot source code.
+				var change : float = ( _scroll_bar.page / PAGE_DIVISOR if (_scroll_bar.page != 0.0) else (_scroll_bar.max_value - _scroll_bar.min_value) / 16.0) * event.factor;
+				_scroll_bar.value += max(change,_scroll_bar.step)
+				_scroll_bar.scrolling.emit()
+			if event.button_index == MouseButton.MOUSE_BUTTON_WHEEL_UP and event.is_pressed():
+				# Taken from godot source code.
+				var change : float = ( _scroll_bar.page / PAGE_DIVISOR if (_scroll_bar.page != 0.0) else (_scroll_bar.max_value - _scroll_bar.min_value) / 16.0) * event.factor;
+				_scroll_bar.value -= max(change,_scroll_bar.step)
+				_scroll_bar.scrolling.emit()
