@@ -1,14 +1,9 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
-[node name="Node" type="Node" unique_id=75045651]
+[node name="Node" type="Node" unique_id=392743854]
 
-[node name="HSlider" type="HSlider" parent="." unique_id=602198151]
+[node name="HSlider" type="HSlider" parent="." unique_id=379691644]
 offset_right = 8.0
 offset_bottom = 16.0
 
-[node name="TabBar" type="TabBar" parent="HSlider" unique_id=1673413911]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=690147972]
+[node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
