@@ -105,11 +105,11 @@ func _parse_end(object: Object) -> void:
 
 	var tab = tabs.find(current_category)
 	if tab == -1:
-		tab_clicked(0)
+		_switch_tab(0)
 		tab_selected(0)
 		tab_bar.current_tab = 0
 	else:
-		tab_clicked(tab)
+		_switch_tab(tab)
 		tab_bar.current_tab = tab
 
 	tab_resized()
@@ -255,15 +255,23 @@ func update_tabs() -> void:
 
 		tab_bar.set_tab_tooltip(tab_bar.tab_count-1,tab_name)
 
-func tab_clicked(tab: int) -> void:
+func _on_tab_changed(tab: int) -> void:
+	_update_inspector()
+
+func _switch_tab(tab: int) -> void:
+	tab_bar.current_tab = tab
+
+func _update_inspector() -> void:
 	if is_filtering: return
+
+	var tab := tab_bar.current_tab
 	if property_mode == TabPropertyModes.TABBED: # Tabbed
 		var category_idx = -1
 		var tab_idx = -1
 
 		# Show nececary properties
-		for i in property_container.get_children():
-			if i.get_class() == "EditorInspectorCategory":
+		for child in property_container.get_children():
+			if child.get_class() == "EditorInspectorCategory":
 				category_idx += 1
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
@@ -273,9 +281,10 @@ func tab_clicked(tab: int) -> void:
 				if is_new_tab(categories[category_idx]):
 					tab_idx += 1
 			if tab_idx != tab:
-				i.visible = false
+				child.visible = false
 			else:
-				i.visible = true
+				child.visible = true
+
 	elif property_mode == TabPropertyModes.JUMP_SCROLL: # Jump Scroll
 		var category_idx = -1
 		var tab_idx = -1
@@ -311,7 +320,7 @@ func _filter_text_changed(text:String):
 		is_filtering = true
 	else:
 		is_filtering = false
-		tab_clicked(tab_bar.current_tab)
+		_switch_tab(tab_bar.current_tab)
 
 
 func tab_selected(tab):
@@ -344,7 +353,7 @@ func change_vertical_mode(mode:bool = vertical_mode):
 	panel.show_behind_parent = true
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	tab_bar.tab_clicked.connect(tab_clicked)
+	tab_bar.tab_changed.connect(_on_tab_changed)
 
 	if not vertical_mode:
 		###### Find the first ancestor VBoxContainer function
