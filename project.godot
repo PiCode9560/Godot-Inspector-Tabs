@@ -20,4 +20,4 @@ config/icon="uid://df4aow18mctek"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/inspector_tabs/plugin.cfg", "res://addons/zylann.editor_debugger/plugin.cfg")
+enabled=PackedStringArray("res://addons/zylann.editor_debugger/plugin.cfg")
