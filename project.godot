@@ -18,6 +18,10 @@ config/name="Inspector Tabs Test Project"
 config/features=PackedStringArray("4.6")
 config/icon="uid://df4aow18mctek"
 
+[dotnet]
+
+project/assembly_name="Inspector Tabs Test Project"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/inspector_tabs/plugin.cfg", "res://addons/zylann.editor_debugger/plugin.cfg")
