@@ -418,7 +418,7 @@ func get_tab_icon(tab) -> Texture2D:
 	return load_icon
 
 
-func find_custom_class_name(_script:GDScript) -> String:
+func find_custom_class_name(_script:Script) -> String:
 	var _name : String = ""
 	if _script.get_base_script():
 		_name = _script.get_base_script().get_global_name()

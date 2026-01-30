@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://dbrxrmiiw80pm"]
+
+[ext_resource type="Script" uid="uid://chhhou20ecknr" path="res://scripts/CSharpTest.cs" id="1_ocjsr"]
+
+[node name="Node" type="Node" unique_id=1445329684]
+script = ExtResource("1_ocjsr")
+
+[node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=483814861]
