@@ -1,9 +1,9 @@
 extends EditorInspectorPlugin
 
-const KEY_TAB_LAYOUT = "inspector_tabs/tab_layout"
-const KEY_TAB_STYLE = "inspector_tabs/tab_style"
-const KEY_TAB_PROPERTY_MODE = "inspector_tabs/tab_property_mode"
-const KEY_MERGE_ABSTRACT_CLASS_TABS = "inspector_tabs/merge_abstract_class_tabs"
+const KEY_TAB_LAYOUT: StringName = &"inspector_tabs/tab_layout"
+const KEY_TAB_STYLE: StringName  = &"inspector_tabs/tab_style"
+const KEY_TAB_PROPERTY_MODE: StringName  = &"inspector_tabs/tab_property_mode"
+const KEY_MERGE_ABSTRACT_CLASS_TABS: StringName  = &"inspector_tabs/merge_abstract_class_tabs"
 
 enum TabStyles{
 	TEXT_ONLY,
@@ -170,12 +170,12 @@ func start() -> void:
 	inspector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	var settings = EditorInterface.get_editor_settings()
-	tab_style = settings.get("inspector_tabs/tab_style")
-	property_mode = settings.get("inspector_tabs/tab_property_mode")
-	merge_abstract_class_tabs = settings.get("inspector_tabs/merge_abstract_class_tabs")
+	tab_style = settings.get(KEY_TAB_STYLE)
+	property_mode = settings.get(KEY_TAB_PROPERTY_MODE)
+	merge_abstract_class_tabs = settings.get(KEY_MERGE_ABSTRACT_CLASS_TABS)
 	settings.settings_changed.connect(settings_changed)
 
-	var tab_pos = settings.get("inspector_tabs/tab_layout")
+	var tab_pos = settings.get(KEY_TAB_LAYOUT)
 	if tab_pos != null:
 		if tab_pos == 0:
 			change_vertical_mode(false)
@@ -348,7 +348,7 @@ func _update_tabbar() -> void:
 
 
 func settings_changed() -> void:
-	var tab_pos = settings.get("inspector_tabs/tab_layout")
+	var tab_pos = settings.get(KEY_TAB_LAYOUT)
 	if tab_pos != null:
 		if tab_pos == 0:
 			if vertical_mode != false:
@@ -356,15 +356,15 @@ func settings_changed() -> void:
 		else:
 			if vertical_mode != true:
 				change_vertical_mode(true)
-	var style = settings.get("inspector_tabs/tab_style")
+	var style = settings.get(KEY_TAB_STYLE)
 	if style != null:
 		if tab_style != style:
 			tab_style = style
-	var prop_mode = settings.get("inspector_tabs/tab_property_mode")
+	var prop_mode = settings.get(KEY_TAB_PROPERTY_MODE)
 	if prop_mode != null:
 		if property_mode != prop_mode:
 			property_mode = prop_mode
-	var merge_class = settings.get("inspector_tabs/merge_abstract_class_tabs")
+	var merge_class = settings.get(KEY_MERGE_ABSTRACT_CLASS_TABS)
 	if merge_class != null:
 		if merge_abstract_class_tabs != merge_class:
 			merge_abstract_class_tabs = merge_class
