@@ -1,12 +1,20 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ru4op"]
+[ext_resource type="Script" uid="uid://ceruklkefb0qg" path="res://resources/test_custom_resource.gd" id="1_6r00q"]
+[ext_resource type="Script" uid="uid://c3exkqdxn4834" path="res://scripts/node.gd" id="1_ignic"]
+[ext_resource type="Script" uid="uid://bx8h4xo7khhs3" path="res://scripts/vehicle_body_3d.gd" id="3_dondh"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ignic"]
+script = ExtResource("1_6r00q")
+metadata/_custom_type_script = "uid://ceruklkefb0qg"
 
 [node name="Node" type="Node" unique_id=392743854]
+script = ExtResource("1_ignic")
 
 [node name="HSlider" type="HSlider" parent="." unique_id=379691644]
 offset_right = 8.0
 offset_bottom = 16.0
 
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
-physics_material_override = SubResource("PhysicsMaterial_ru4op")
+physics_material_override = SubResource("PhysicsMaterial_ignic")
+script = ExtResource("3_dondh")

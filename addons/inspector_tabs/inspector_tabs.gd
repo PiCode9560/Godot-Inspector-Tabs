@@ -446,9 +446,9 @@ func find_custom_class_name(_script:GDScript) -> String:
 				if ResourceLoader.exists(class_info["icon"]) == false:
 					return find_custom_class_name(load(class_info["path"]))
 	else:
-		var _node = _script.new() as Node
-		_name = _node.get_class()
-		_node.free()
+		## Get script base class. (Get the built-in godot class)
+		_name = _script.new().get_class()
+
 	return _name
 
 
