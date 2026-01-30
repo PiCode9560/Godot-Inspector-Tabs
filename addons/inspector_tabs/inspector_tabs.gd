@@ -44,6 +44,8 @@ var property_container = EditorInterface.get_inspector().get_child(0).get_child(
 var property_scroll_bar:VScrollBar = EditorInterface.get_inspector().get_node("_v_scroll")
 ## Use to check if the loaded icon is an unknown icon
 var UNKNOWN_ICON:Texture2D = EditorInterface.get_base_control().get_theme_icon("", "EditorIcons")
+## The icon to use if the object icon is not found.
+var fallback_icon : Texture2D = EditorInterface.get_base_control().get_theme_icon("Resource", "EditorIcons")
 
 var is_filtering = false ## is the search bar in use
 
@@ -52,6 +54,7 @@ var current_parse_category:String = ""
 var icon_cache : Dictionary
 
 var inspector_dock = EditorInterface.get_base_control().find_child("Inspector",true,false)
+
 
 func _can_handle(object):
 	# We support all objects in this example.
@@ -69,9 +72,16 @@ func _parse_category(object: Object, category: String) -> void:
 	if current_parse_category != "Node": # This line is needed because when selecting multiple nodes the refcounted class will be the last tab.
 		current_parse_category = category
 
+
 # Finished getting inspector categories
 func _parse_end(object: Object) -> void:
-	if current_parse_category != "Node": return # False finish
+	if current_parse_category != "Node" and current_parse_category != "RefCounted": return # False finish
+
+	if current_parse_category == "RefCounted":
+		fallback_icon = EditorInterface.get_base_control().get_theme_icon("ObjectDisabled", "EditorIcons")
+	else:
+		fallback_icon = EditorInterface.get_base_control().get_theme_icon("NodeDisabled", "EditorIcons")
+
 	current_parse_category = ""
 
 	for i in property_container.get_children():
@@ -111,7 +121,6 @@ func _parse_end(object: Object) -> void:
 		inspector_tab_bar.tab_bar.current_tab = tab
 
 
-
 # Start inspector loading
 func parse_begin(object: Object) -> void:
 	categories_finish = false
@@ -119,6 +128,7 @@ func parse_begin(object: Object) -> void:
 	tabs.clear()
 	tab_can_change = false
 	inspector_tab_bar.tab_bar.clear_tabs()
+
 
 func process(delta) -> void:
 
@@ -172,10 +182,12 @@ func start() -> void:
 		else:
 			change_vertical_mode(true)
 
+
 func exit() -> void:
 	EditorInterface.get_inspector().reparent(inspector_container.get_parent())
 	inspector_container.queue_free()
 	inspector_tab_bar.queue_free()
+
 
 # Is it not a custom class
 func is_base_class(c_name:String) -> bool:
@@ -210,6 +222,7 @@ func get_script_icon(script_path:String) -> Texture2D:
 				return ImageTexture.create_from_image(image)
 	return base_control.get_theme_icon("GDScript", "EditorIcons")
 
+
 # add tabs
 func update_tabs() -> void:
 	inspector_tab_bar.tab_bar.clear_tabs()
@@ -239,11 +252,14 @@ func update_tabs() -> void:
 
 		inspector_tab_bar.tab_bar.set_tab_tooltip(inspector_tab_bar.tab_bar.tab_count-1,tab_name)
 
+
 func _on_tab_changed(tab: int) -> void:
 	_update_inspector()
 
+
 func _switch_tab(tab: int) -> void:
 	inspector_tab_bar.tab_bar.current_tab = tab
+
 
 func _update_inspector() -> void:
 	if is_filtering: return
@@ -311,9 +327,6 @@ func tab_selected(tab):
 	if tab_can_change:
 		current_category = tabs[tab]
 
-
-
-
 # Change position mode
 func change_vertical_mode(mode:bool):
 	vertical_mode = mode
@@ -332,9 +345,6 @@ func _update_tabbar() -> void:
 	inspector_tab_bar.change_vertical_side(vertical_tab_side)
 
 	update_tabs()
-
-
-
 
 
 func settings_changed() -> void:
@@ -403,17 +413,26 @@ func get_tab_icon(tab) -> Texture2D:
 	var load_icon : Texture2D
 
 	if tab.ends_with(".gd"):
-		load_icon = get_script_icon(tab) ## Get script custom icon or the GDScript icon
+		## Get script custom icon or the GDScript icon
+		load_icon = get_script_icon(tab)
+
+	if tab == "Resource" or tab == "RefCounted":
+		load_icon = EditorInterface.get_base_control().get_theme_icon("Object", "EditorIcons")
+
 	elif ClassDB.class_exists(tab):
 		if ClassDB.class_get_api_type(tab) == ClassDB.APIType.API_EXTENSION:
-			load_icon = get_extension_class_icon(tab)  ## Get GDExtension node icon
+			## Get GDExtension node icon
+			load_icon = get_extension_class_icon(tab)
 		else:
-			load_icon = base_control.get_theme_icon(tab, "EditorIcons") ## Get editor node icon
+			## Get editor node icon
+			load_icon = base_control.get_theme_icon(tab, "EditorIcons")
+
 	else:
-		load_icon = get_script_class_icon(tab) ## Get script class icon
+		## Get script custom class icon
+		load_icon = get_script_class_icon(tab)
 
 	if load_icon == UNKNOWN_ICON:
-		load_icon = base_control.get_theme_icon("NodeDisabled", "EditorIcons")
+		load_icon = fallback_icon
 
 	return load_icon
 

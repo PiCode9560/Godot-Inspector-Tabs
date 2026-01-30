@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ru4op"]
+
 [node name="Node" type="Node" unique_id=392743854]
 
 [node name="HSlider" type="HSlider" parent="." unique_id=379691644]
@@ -7,3 +9,4 @@ offset_right = 8.0
 offset_bottom = 16.0
 
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
+physics_material_override = SubResource("PhysicsMaterial_ru4op")
