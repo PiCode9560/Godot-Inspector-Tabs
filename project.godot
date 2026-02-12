@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Inspector Tabs Test Project"
-config/features=PackedStringArray("4.6")
+config/features=PackedStringArray("4.6", "C#")
 config/icon="uid://df4aow18mctek"
 
 [dotnet]
@@ -24,4 +24,4 @@ project/assembly_name="Inspector Tabs Test Project"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/zylann.editor_debugger/plugin.cfg")
+enabled=PackedStringArray("res://addons/inspector_tabs/plugin.cfg", "res://addons/zylann.editor_debugger/plugin.cfg")
