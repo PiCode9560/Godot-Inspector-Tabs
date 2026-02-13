@@ -1,5 +1,9 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
+[ext_resource type="Script" uid="uid://k2x2bgvoda3a" path="res://scripts/gdscript_no_class_no_icon.gd" id="5_qhfa5"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ignic"]
+
 [node name="Node" type="Node" unique_id=392743854]
 
 [node name="HSlider" type="HSlider" parent="." unique_id=379691644]
@@ -7,3 +11,11 @@ offset_right = 8.0
 offset_bottom = 16.0
 
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
+physics_material_override = SubResource("PhysicsMaterial_ignic")
+
+[node name="GDScriptNoClassNoIcon" type="Control" parent="." unique_id=2134171998]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_qhfa5")

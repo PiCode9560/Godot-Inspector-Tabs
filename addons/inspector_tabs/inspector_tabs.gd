@@ -208,6 +208,7 @@ func get_script_icon(script_path:String) -> Texture2D:
 				var image = texture.get_image()
 				image.resize(UNKNOWN_ICON.get_width(),UNKNOWN_ICON.get_height())
 				return ImageTexture.create_from_image(image)
+
 	return base_control.get_theme_icon("GDScript", "EditorIcons")
 
 # add tabs
@@ -404,6 +405,10 @@ func get_tab_icon(tab) -> Texture2D:
 
 	if tab.ends_with(".gd"):
 		load_icon = get_script_icon(tab) ## Get script custom icon or the GDScript icon
+
+	elif tab == "Resource" or tab == "RefCounted":
+		load_icon = EditorInterface.get_base_control().get_theme_icon("Object", "EditorIcons")
+
 	elif ClassDB.class_exists(tab):
 		if ClassDB.class_get_api_type(tab) == ClassDB.APIType.API_EXTENSION:
 			load_icon = get_extension_class_icon(tab)  ## Get GDExtension node icon
