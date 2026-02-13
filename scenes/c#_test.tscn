@@ -1,8 +1,17 @@
 [gd_scene format=3 uid="uid://dbrxrmiiw80pm"]
 
 [ext_resource type="Script" uid="uid://chhhou20ecknr" path="res://scripts/CSharpTest.cs" id="1_ocjsr"]
+[ext_resource type="Script" uid="uid://cac2l8pb3i2ny" path="res://scripts/CSharpClassInheritClass.cs" id="2_nas3v"]
+[ext_resource type="Script" uid="uid://cfb0h0ef2btth" path="res://scripts/AbstractClass.cs" id="3_wf3p5"]
 
 [node name="Node" type="Node" unique_id=1445329684]
 script = ExtResource("1_ocjsr")
 
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=483814861]
+
+[node name="CSharpClassInheritClass" type="Node" parent="." unique_id=1643695137]
+script = ExtResource("2_nas3v")
+metadata/_custom_type_script = "uid://cac2l8pb3i2ny"
+
+[node name="AbstractClass" type="Node" parent="." unique_id=852931669]
+script = ExtResource("3_wf3p5")
