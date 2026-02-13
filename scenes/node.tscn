@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://ceruklkefb0qg" path="res://resources/test_custom_resource.gd" id="1_6r00q"]
 [ext_resource type="Script" path="res://scripts/node.gd" id="1_ignic"]
-[ext_resource type="Script" uid="uid://daqwpk0lnw1nb" path="res://scripts/abstract_class.gd" id="2_76phl"]
+[ext_resource type="Script" uid="uid://cql4ptruntby5" path="res://scripts/extends_abstract_class.gd" id="2_76phl"]
 [ext_resource type="Script" path="res://scripts/vehicle_body_3d.gd" id="3_dondh"]
+[ext_resource type="Script" uid="uid://k2x2bgvoda3a" path="res://scripts/gdscript_no_class_no_icon.gd" id="5_qhfa5"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ignic"]
 script = ExtResource("1_6r00q")
@@ -20,3 +21,10 @@ script = ExtResource("2_76phl")
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
 physics_material_override = SubResource("PhysicsMaterial_ignic")
 script = ExtResource("3_dondh")
+
+[node name="GDScriptNoClassNoIcon" type="Control" parent="." unique_id=2134171998]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_qhfa5")
