@@ -417,20 +417,23 @@ func get_tab_icon(tab) -> Texture2D:
 
 	return load_icon
 
-
+## Find an ancestor class that have an icon.
 func find_custom_class_name(_script:Script) -> String:
-	var _name : String = ""
 	if _script.get_base_script():
-		_name = _script.get_base_script().get_global_name()
+		## Get the parent script class.
+		var _name := _script.get_base_script().get_global_name()
 		for class_info in ProjectSettings.get_global_class_list():
 			if class_info["class"] == _name:
 				if ResourceLoader.exists(class_info["icon"]) == false:
 					return find_custom_class_name(load(class_info["path"]))
 	else:
-		var _node = _script.new() as Node
-		_name = _node.get_class()
-		_node.free()
-	return _name
+		## Get script base class. (Get the built-in godot class)
+		var _name = _script.get_global_name()
+		for class_info in ProjectSettings.get_global_class_list():
+			if class_info["class"] == _name:
+				return class_info["base"]
+
+	return ""
 
 
 func get_script_class_icon(tab) -> Texture2D:
