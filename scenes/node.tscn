@@ -1,19 +1,9 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
-[ext_resource type="Script" uid="uid://ceruklkefb0qg" path="res://resources/test_custom_resource.gd" id="1_6r00q"]
-[ext_resource type="Script" path="res://scripts/node.gd" id="1_ignic"]
-[ext_resource type="Script" uid="uid://daqwpk0lnw1nb" path="res://scripts/abstract_class.gd" id="2_76phl"]
-[ext_resource type="Script" path="res://scripts/vehicle_body_3d.gd" id="3_dondh"]
-
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ignic"]
-script = ExtResource("1_6r00q")
-metadata/_custom_type_script = "uid://ceruklkefb0qg"
-
 [node name="Node" type="Node" unique_id=392743854]
 
 [node name="HSlider" type="HSlider" parent="." unique_id=379691644]
 offset_right = 8.0
 offset_bottom = 16.0
-script = ExtResource("2_76phl")
 
 [node name="VehicleBody3D" type="VehicleBody3D" parent="." unique_id=2132968373]
