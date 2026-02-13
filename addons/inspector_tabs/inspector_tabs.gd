@@ -446,8 +446,9 @@ func find_custom_class_name(_script:Script) -> String:
 				if ResourceLoader.exists(class_info["icon"]) == false:
 					return find_custom_class_name(load(class_info["path"]))
 	else:
-		## Get script base class. (Get the built-in godot class)
-		_name = _script.new().get_class()
+		if !_script.is_abstract():
+			## Get script base class. (Get the built-in godot class)
+			_name = _script.new().get_class()
 
 	return _name
 
