@@ -107,7 +107,7 @@ func _parse_end(object: Object) -> void:
 			var category = "Unknown"
 			tabs.append(category)
 			categories.append(category)
-	categories_finish = true
+
 	update_tabs() # load tab
 	tab_can_change = true
 
@@ -120,6 +120,7 @@ func _parse_end(object: Object) -> void:
 		_switch_tab(tab)
 		inspector_tab_bar.tab_bar.current_tab = tab
 
+	categories_finish = true
 
 # Start inspector loading
 func parse_begin(object: Object) -> void:
@@ -287,6 +288,10 @@ func _update_inspector() -> void:
 				child.visible = true
 
 	elif property_mode == TabPropertyModes.JUMP_SCROLL: # Jump Scroll
+		if categories_finish == false:
+			# Prevent scrolling when parsing categories
+			return
+
 		var category_idx = -1
 		var tab_idx = -1
 
@@ -388,7 +393,9 @@ func settings_changed() -> void:
 	_update_tabbar()
 
 func property_scrolling():
-	if property_mode != TabPropertyModes.JUMP_SCROLL or inspector_tab_bar.tab_bar.tab_count == 0 or is_filtering:return
+	if property_mode != TabPropertyModes.JUMP_SCROLL or inspector_tab_bar.tab_bar.tab_count == 0 or is_filtering:
+		return
+
 	var category_idx = -1
 	var tab_idx = -1
 	var category_y = - INF

@@ -11,7 +11,9 @@ script = ExtResource("1_6r00q")
 metadata/_custom_type_script = "uid://ceruklkefb0qg"
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qhfa5"]
-transparency = 1
+blend_mode = 1
+shading_mode = 2
+diffuse_mode = 1
 
 [node name="Node" type="Node" unique_id=392743854]
 script = ExtResource("1_ignic")
