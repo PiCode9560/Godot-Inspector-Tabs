@@ -256,7 +256,8 @@ func update_tabs() -> void:
 
 
 func _on_tab_changed(tab: int) -> void:
-	_update_inspector()
+	if tab_can_change:
+		_update_inspector()
 
 
 func _switch_tab(tab: int) -> void:
@@ -408,7 +409,9 @@ func property_scrolling():
 			if (i.position.y+property_container.position.y-EditorInterface.get_inspector().size.y/3) <= property_scroll_bar.value/property_scroll_bar.max_value*list_size_y:
 				category_y = property_container.position.y
 			else:
+				tab_can_change = false
 				inspector_tab_bar.tab_bar.current_tab = max(tab_idx,0)
+				tab_can_change = true
 				break
 			category_idx += 1
 			if is_new_tab(categories[category_idx]):
