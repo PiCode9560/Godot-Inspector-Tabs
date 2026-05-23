@@ -1,14 +1,17 @@
 [gd_scene format=3 uid="uid://y8bs6egoqbwl"]
 
 [ext_resource type="Script" uid="uid://ceruklkefb0qg" path="res://resources/test_custom_resource.gd" id="1_6r00q"]
-[ext_resource type="Script" path="res://scripts/node.gd" id="1_ignic"]
+[ext_resource type="Script" uid="uid://c3exkqdxn4834" path="res://scripts/node.gd" id="1_ignic"]
 [ext_resource type="Script" uid="uid://cql4ptruntby5" path="res://scripts/extends_abstract_class.gd" id="2_76phl"]
-[ext_resource type="Script" path="res://scripts/vehicle_body_3d.gd" id="3_dondh"]
+[ext_resource type="Script" uid="uid://bx8h4xo7khhs3" path="res://scripts/vehicle_body_3d.gd" id="3_dondh"]
 [ext_resource type="Script" uid="uid://k2x2bgvoda3a" path="res://scripts/gdscript_no_class_no_icon.gd" id="5_qhfa5"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ignic"]
 script = ExtResource("1_6r00q")
 metadata/_custom_type_script = "uid://ceruklkefb0qg"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qhfa5"]
+transparency = 1
 
 [node name="Node" type="Node" unique_id=392743854]
 script = ExtResource("1_ignic")
@@ -28,3 +31,8 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("5_qhfa5")
+
+[node name="VehicleBody3D2" type="VehicleBody3D" parent="." unique_id=1328946204]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1826457450]
+material_override = SubResource("StandardMaterial3D_qhfa5")
