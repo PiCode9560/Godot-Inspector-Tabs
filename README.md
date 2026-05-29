@@ -17,7 +17,7 @@ Vertical layout           |  Horizontal layout
 - Favorite property will be shown in all tabs.
 
 # Installing
-You can install it from the [asset library](https://godotengine.org/asset-library/asset/3951).
+You can install it from the [Asset store](https://store.godotengine.org/asset/picode/inspector-tabs/) or [Asset library](https://godotengine.org/asset-library/asset/3951).
 
 You can also install it manually:
 - Download the files.
